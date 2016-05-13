@@ -1,5 +1,5 @@
 <?php
-namespace Exception;
+namespace Raam\Exception;
 
 class InvalidConfigException extends Exception 
 {

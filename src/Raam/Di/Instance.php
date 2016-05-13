@@ -1,5 +1,5 @@
 <?php
-namespace Di;
+namespace Raam\Di;
 
 class Instance
 {

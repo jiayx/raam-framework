@@ -1,7 +1,8 @@
 <?php
-namespace Di;
+namespace Raam\Di;
 
-use Exception\InvalidConfigException;
+use ArrayAccess;
+use Raam\Exceptions\InvalidConfigException;
 
 // 依赖注入容器
 class Container implements ArrayAccess
@@ -20,20 +21,20 @@ class Container implements ArrayAccess
     // 注册依赖
     public function set($class, $definition = [], $params = [])
     {
-        $this['definitions'][$class] = $this->normalizeDefinition($class, $definition);
-        $this['params'][$class] = $params;
+        $this->definitions[$class] = $this->normalizeDefinition($class, $definition);
+        $this->params[$class] = $params;
         // 使用set申明依赖，说明这个不需要单例
-        unset($this['singletons'][$class]);
+        unset($this->singletons[$class]);
         return $this;
     }
 
     // 注册单例依赖
     public function setSingleton($class, $definition = [], $params = [])
     {
-        $this['definitions'][$class] = $this->normalizeDefinition($class, $definition);
-        $this['params'][$class] = $params;
+        $this->definitions[$class] = $this->normalizeDefinition($class, $definition);
+        $this->params[$class] = $params;
         // 初始化单例为null
-        $this['singletons'][$class] = null;
+        $this->singletons[$class] = null;
         return $this;
     }
 
@@ -41,15 +42,15 @@ class Container implements ArrayAccess
     public function get($class, $params = [], $config = [])
     {
         // 先看是否有实例化过的单例有的话直接使用了 - note: isset(null) 返回false
-        if (isset($this['singletons'][$class])) {
-            return $this['singletons'][$class];
+        if (isset($this->singletons[$class])) {
+            return $this->singletons[$class];
         }
         // 没有定义过依赖 - 说明不依赖其他类 或者 不需要[显式]定义依赖(构造函数包含了依赖信息)
-        if (! isset($this['definitions'][$class])) {
+        if (! isset($this->definitions[$class])) {
             return $this->build($class, $params, $config);
         }
         // 定义过依赖的话 那就开始解决依赖吧
-        $definition = $this['definitions'][$class];
+        $definition = $this->definitions[$class];
         if (is_callable($definition)) {
             // 合并参数
             // 这里跟yii不同 貌似定义了 callable 的参数之后 肯定不会存在$this->params[$class]的
@@ -78,14 +79,14 @@ class Container implements ArrayAccess
 
         } elseif (is_object($definition)) {
             //是对象的话代表全局只用这一个 - 故保存为单例
-            return $this['singletons'][$class] = $definition;
+            return $this->singletons[$class] = $definition;
         } else {
             // 最后什么都不满足就抛出错误吧
             throw new InvalidConfigException('依赖定义的参数类型有误: ' . gettype($definition));
         }
         // singletons 中含有这个键值 说明这个类需要单例
-        if (array_key_exists($class, $this['singletons'])) {
-            $this['singletons'][$class] = $object;
+        if (array_key_exists($class, $this->singletons)) {
+            $this->singletons[$class] = $object;
         }
         return $object;
     }
@@ -94,8 +95,8 @@ class Container implements ArrayAccess
     protected function getDependencies($class)
     {
         // 这两个总是会同时存在的 所以只判断一个就好了
-        if (isset($this['reflections'][$class])) {
-            return [$this['reflections'][$class], $this['dependencies'][$class]];
+        if (isset($this->reflections[$class])) {
+            return [$this->reflections[$class], $this->dependencies[$class]];
         }
         $dependencies = [];
         // 通过反射api实例化一个对象
@@ -120,9 +121,9 @@ class Container implements ArrayAccess
             }
         }
         // 缓存ReflectionClass对象 以提高效率
-        $this['reflections'][$class] = $reflection;
+        $this->reflections[$class] = $reflection;
         // 缓存依赖信息
-        $this['dependencies'][$class] = $dependencies;
+        $this->dependencies[$class] = $dependencies;
         return [$reflection, $dependencies];
     }
 
@@ -167,7 +168,7 @@ class Container implements ArrayAccess
     protected function mergeParams($class, $params)
     {
         $_params = [];
-        if (isset($this['params'][$class])) {
+        if (isset($this->params[$class])) {
             $_params = $this['params'][$class];
         }
         // 用get时传入的参数覆盖之前定义的参数
@@ -191,5 +192,22 @@ class Container implements ArrayAccess
         } else {
             throw new InvalidConfigException('依赖定义格式有误');
         }
+    }
+
+    // 下面4个 实现 ArrayAccess 的方法
+    public function offsetExists($key)
+    {
+    }
+    public function offsetGet($key)
+    {
+        return $this->build($key);
+    }
+    public function offsetSet($key, $value)
+    {
+        $this->setSingleton($key, $value);
+    }
+    public function offsetUnset($key)
+    {
+        unset($this->singletons[$key], $this->definitions[$key], $this->params[$key], $this->reflections[$key], $this->dependencies[$key]);
     }
 }
