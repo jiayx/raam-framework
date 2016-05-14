@@ -5,7 +5,7 @@ use ArrayAccess;
 use Raam\Exceptions\InvalidConfigException;
 
 // 依赖注入容器
-class Container implements ArrayAccess
+class Container
 {
     // 保存已生成的单例
     private $singletons = [];
@@ -192,22 +192,5 @@ class Container implements ArrayAccess
         } else {
             throw new InvalidConfigException('依赖定义格式有误');
         }
-    }
-
-    // 下面4个 实现 ArrayAccess 的方法
-    public function offsetExists($key)
-    {
-    }
-    public function offsetGet($key)
-    {
-        return $this->build($key);
-    }
-    public function offsetSet($key, $value)
-    {
-        $this->setSingleton($key, $value);
-    }
-    public function offsetUnset($key)
-    {
-        unset($this->singletons[$key], $this->definitions[$key], $this->params[$key], $this->reflections[$key], $this->dependencies[$key]);
     }
 }
