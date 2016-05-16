@@ -1,35 +1,42 @@
 <?php
-
+namespace Raam;
 /**
 * 配置文件读取
 */
 class Config
 {
-    private static $configPath = ROOT_PATH . 'config';
+    private $configPath = ROOT_PATH . 'config';
 
     // 配置文件缓存
-    private static $configCache = [];
+    private $configCache = [];
     // 已加载文件缓存
-    private static $loadedCache = [];
+    private $loadedCache = [];
+
+    public function __construct($config = [])
+    {
+        $this->configPath = $config['configPath'];
+    }
 
     // 取配置
-    public static function get($key, $default = null)
+    public function get($key, $default = null)
     {
         // 先查找取缓存
-        if (isset(self::$configCache[$key])) {
-            return self::$configCache[$key];
+        if (isset($this->configCache[$key])) {
+            return $this->configCache[$key];
         }
 
         // 缓存没有的话查找文件
         $keys = explode('.', $key);
         $fileName = array_shift($keys);
 
-        if (empty(self::$loadedCache[$fileName])) {
+        if (empty($this->loadedCache[$fileName])) {
 
+            $envCconfig = [];
+            $commonConfig = [];
             // 当前环境配置文件路径
-            $envConfigPath = self::$configPath . DS . ENV . DS . $fileName . '.php';
+            $envConfigPath = $this->configPath . DIRECTORY_SEPARATOR . ENV . DIRECTORY_SEPARATOR . $fileName . '.php';
             // 公共配置文件路径
-            $commonConfigPath = self::$configPath . DS . $fileName . '.php';
+            $commonConfigPath = $this->configPath . DIRECTORY_SEPARATOR . $fileName . '.php';
 
             if (file_exists($envConfigPath)) {
                 $envCconfig = (array) require $envConfigPath;
@@ -38,10 +45,10 @@ class Config
                 $commonConfig = (array) require $commonConfigPath;
             }
             // 合并环境配置和公共配置 并写入缓存
-            self::$loadedCache[$fileName] = $envCconfig + $commonConfig;
+            $this->loadedCache[$fileName] = $envCconfig + $commonConfig;
         }
         
-        $config = self::$loadedCache[$fileName];
+        $config = $this->loadedCache[$fileName];
         // 循环取出要获取的值 没有则返回默认值
         foreach ($keys as $k) {
             if (isset($config[$k])) {
@@ -50,14 +57,14 @@ class Config
                 return $default;
             }
         }
-        return self::$configCache[$key] = $config;
+        return $this->configCache[$key] = $config;
     }
 
     // 设定配置 - 设置完之后 在此脚本之后的代码获取到的值都变为此值 - 通过set(key, '') 来恢复默认 
-    public static function set($key, $value)
+    public function set($key, $value)
     {
-        if (!empty($key)) {
-            self::$configCache[$key] = $value;
+        if (! empty($key)) {
+            $this->configCache[$key] = $value;
         }
     }
 }

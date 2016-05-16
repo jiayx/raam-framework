@@ -1,4 +1,5 @@
 <?php
+namespace Raam;
 
 /**
 * 自动加载类 
@@ -6,24 +7,28 @@
 class Loader
 {
     // 自动加载搜索目录
-    private static $loadPaths = [];
+    private $loadPaths = [];
     // 这个暂时没用
-    private static $LoadedCache = [];
+    private $LoadedCache = [];
 
     // 添加自动加载路径
-    public static function addAutoLoadPath($path)
+    public function addAutoLoadPath($path)
     {
-        self::$loadPaths[] = $path;
+        if (is_array($path)) {
+            $this->loadPaths = array_merge($this->loadPaths, $path);
+        } else {
+            $this->loadPaths[] = $path;
+        }
     }
 
     // 注册自动加载函数
-    public static function register()
+    public function register()
     {
-        spl_autoload_register('self::autoload');
+        spl_autoload_register([$this, 'autoload']);
     }
 
     // 自动加载函数
-    public static function autoload($className)
+    public function autoload($className)
     {
         $className = ltrim($className, '\\');
         $namespace = '';
@@ -34,17 +39,17 @@ class Loader
             $fileName = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
         }
         $fileName .= str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $className) . '.php';
-        foreach (self::$loadPaths as $loadPath) {
+        foreach ($this->loadPaths as $loadPath) {
             $loadPath = rtrim($loadPath, DIRECTORY_SEPARATOR);
             $path = $loadPath . DIRECTORY_SEPARATOR . $fileName;
-            if (self::import($path)) {
+            if ($this->import($path)) {
                 break;
             }
         }
     }
 
     // 包含一个已存在的文件
-    public static function import($path)
+    public function import($path)
     {
         return file_exists($path) ? include_once($path) : false;
     }

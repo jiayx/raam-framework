@@ -1,19 +1,19 @@
 <?php
-
+namespace Raam;
 /**
 * 路由
 */
 
 class Route
 {
-    private static $rules = [
+    private $rules = [
         'GET' => [],
         'POST' => [],
         'ALL' => [],
         'MISSING' => '',
     ];
 
-    public static function run()
+    public function run()
     {
         $uri = Request::uri();
         // print_r($uri);die;
@@ -33,11 +33,11 @@ class Route
                 }
             }
         }
-        self::dispatch(self::$rules['MISSING']);
+        self::dispatch($this->rules['MISSING']);
     }
 
     // 路由分发
-    private static function dispatch(&$method, $params = [])
+    private function dispatch(&$method, $params = [])
     {
         if (is_string($method)) {
             if ($isCallable = self::isCallable($method)) {
@@ -54,7 +54,7 @@ class Route
     }
 
     // 是否可调用
-    private static function isCallable($method)
+    private function isCallable($method)
     {
         $method = explode('@', $method, 2);
         if (count($method) < 2) {
@@ -75,34 +75,34 @@ class Route
         return [$class, $methodName];
     }
 
-    private static function routes()
+    private function routes()
     {
-        $routes = isset(self::$rules[REQUEST_METHOD]) ? self::$rules[REQUEST_METHOD] : [];
-        return $routes + self::$rules['ALL'];
+        $routes = isset($this->rules[REQUEST_METHOD]) ? $this->rules[REQUEST_METHOD] : [];
+        return $routes + $this->rules['ALL'];
     }
 
     // get请求路由
-    public static function get($uri, $method)
+    public function get($uri, $method)
     {
-        self::$rules['GET'][$uri] = $method;
+        $this->rules['GET'][$uri] = $method;
     }
     
     // post请求路由
-    public static function post($uri, $method)
+    public function post($uri, $method)
     {
-        self::$rules['POST'][$uri] = $method;
+        $this->rules['POST'][$uri] = $method;
     }
 
     // 任意请求路由
-    public static function all($uri, $method)
+    public function all($uri, $method)
     {
-        self::$rules['ALL'][$uri] = $method;
+        $this->rules['ALL'][$uri] = $method;
     }
 
     // 找不到路由时
-    public static function missing($method)
+    public function missing($method)
     {
-        self::$rules['MISSING'] = $method;
+        $this->rules['MISSING'] = $method;
     }
 
 }

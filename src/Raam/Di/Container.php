@@ -1,7 +1,7 @@
 <?php
 namespace Raam\Di;
 
-use ArrayAccess;
+use reflectionClass;
 use Raam\Exceptions\InvalidConfigException;
 
 // 依赖注入容器
@@ -51,6 +51,7 @@ class Container
         }
         // 定义过依赖的话 那就开始解决依赖吧
         $definition = $this->definitions[$class];
+
         if (is_callable($definition)) {
             // 合并参数
             // 这里跟yii不同 貌似定义了 callable 的参数之后 肯定不会存在$this->params[$class]的
@@ -66,6 +67,7 @@ class Container
             unset($definition['class']);
             // 合并参数
             $params = $this->mergeParams($class, $params);
+
             // 合并依赖定义时的配置与获取实例时传入的配置
             $config = array_merge($definition, $config);
             // 这里应该是区别是[别名定义]还是[类名定义的]
@@ -74,7 +76,7 @@ class Container
             if ($class === $dependClass) {
                 $object = $this->build($class, $params, $config);
             } else {
-                $object - $this->get($class, $params, $config);
+                $object = $this->get($dependClass, $params, $config);
             }
 
         } elseif (is_object($definition)) {
@@ -115,7 +117,7 @@ class Container
                     $c = $param->getClass();
                     // 拿到类型提示的类名(如果有)
                     $name = $c === null ? null : $c->getName();
-                    // 获取一个该类的Instance示例
+                    // 获取一个该类的Instance实例
                     $dependencies[] = Instance::of($name);
                 }
             }
@@ -137,7 +139,7 @@ class Container
                     $dependencies[$index] = $this->get($dependency->id);
                 } elseif ($reflection !== null) {
                     $class = $reflection->getName();
-                    $name = $reflection->getConstructor()[$index]->getName();
+                    $name = $reflection->getConstructor()->getParameters()[$index]->getName();
                     throw new InvalidConfigException("实例化{$class}时，缺少了必填参数{$name}");
                 }
             }
@@ -149,6 +151,7 @@ class Container
     protected function build($class, $params = [], $config = [])
     {
         list($reflection, $dependencies) = $this->getDependencies($class);
+
         // $params 的内容补充 覆盖到依赖信息中
         // 构造函数需要的[必填参数]可以从这里传入 - 传入之后 会覆盖 Instance->id 为null的参数
         // 为null代表这是一个没有默认值的参数(必填)如果这里没有覆盖，即必须赋值的参数没有赋值，会在 resolveDependencies 的时候报错)
@@ -169,7 +172,7 @@ class Container
     {
         $_params = [];
         if (isset($this->params[$class])) {
-            $_params = $this['params'][$class];
+            $_params = $this->params[$class];
         }
         // 用get时传入的参数覆盖之前定义的参数
         return $params + $_params;

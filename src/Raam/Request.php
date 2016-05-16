@@ -1,5 +1,5 @@
 <?php
-
+namespace Raam;
 /**
 * 请求解析
 */
