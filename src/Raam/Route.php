@@ -1,30 +1,37 @@
 <?php
 namespace Raam;
-/**
-* 路由
-*/
 
+use Raam\Request;
+// 路由
 class Route
 {
-    private $rules = [
+    protected $rules = [
         'GET' => [],
         'POST' => [],
         'ALL' => [],
         'MISSING' => '',
     ];
+    protected $app;
+    protected $request;
+    protected $uri;    
+
+    public function __construct(Application $app, Request $request)
+    {
+        $this->app = $app;
+        $this->request = $request;
+        $this->uri = $request->uri();
+    }
 
     public function run()
     {
-        $uri = Request::uri();
-        // print_r($uri);die;
         $routes = self::routes();
-        if (array_key_exists($uri, $routes)) {
-            if (self::dispatch($routes[$uri])) {
+        if (array_key_exists($this->uri, $routes)) {
+            if (self::dispatch($routes[$this->uri])) {
                 return;
             }
         } else {
             foreach ($routes as $key => $route) {
-                if (! preg_match('~^' . $key . '$~', $uri, $match)) {
+                if (! preg_match('~^' . $key . '$~', $this->uri, $match)) {
                     continue;
                 }
                 array_shift($match);

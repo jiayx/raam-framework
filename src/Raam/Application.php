@@ -20,6 +20,7 @@ class Application extends Container
     // 运行
     public function run()
     {
+        $this->singleton();
         $loaderPath = Config::get('autoload.path');
         // print_r($loaderPath);die;
         Loader::addAutoLoadPath($loaderPath);
@@ -28,10 +29,25 @@ class Application extends Container
         Route::run();
     }
 
+    public function singleton()
+    {
+        $this->setSingleton('Raam\Application', $this);
+        $this->setSingleton('Config', ['class' => 'Raam\Config', 'configPath' => ROOT_PATH . CONFIG_FOLDER]);
+        $this->setSingleton('Loader', 'Raam\Loader');
+        $this->setSingleton('Raam\Request');
+        $this->setSingleton('Request', 'Raam\Request');
+        $this->setSingleton('Route', 'Raam\Route');
+    }
+
     // 获取框架根目录
     public function rootPath()
     {
         return $this->rootPath;
+    }
+
+    public function getApp()
+    {
+        return $this;
     }
 
 }

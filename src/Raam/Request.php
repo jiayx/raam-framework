@@ -5,14 +5,7 @@ namespace Raam;
 */
 class Request
 {
-    // public function __construct()
-    // {
-    //     if (IS_CLI) {
-    //         parse_str($_SERVER['QUERY_STRING'], $_GET);
-    //     }
-    // }
-
-    public static function uri()
+    public function uri()
     {
         $uri = '';
         if (isset($_SERVER['REQUEST_URI'])) {
@@ -34,7 +27,7 @@ class Request
         return $uri ?: '/';
     }
 
-    public static function parse()
+    public function parse()
     {
         if (IS_CLI) {
             $query = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : '';
