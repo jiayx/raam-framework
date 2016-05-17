@@ -44,15 +44,17 @@ class Route
     }
 
     // 路由分发
-    private function dispatch(&$method, $params = [])
+    private function dispatch(&$callback, $params = [])
     {
-        if (is_string($method)) {
-            if ($isCallable = self::isCallable($method)) {
-                call_user_func_array($isCallable, $params);
+        if (is_string($callback)) {
+            if ($isCallable = self::isCallable($callback)) {
+                // call_user_func_array($isCallable, $params);
+                $this->app->invoke($isCallable, $params);
                 return true;
             }
-        } elseif (is_callable($method)) {
-            call_user_func_array($method, $params);
+        } elseif (is_callable($callback)) {
+            // call_user_func_array($callback, $params);
+            $this->app->invoke($callback, $params);
             return true;
         } else {
             // todo 

@@ -203,6 +203,7 @@ class Container
     // 调用一个函数并解决依赖
     public function invoke(callable $callback, $params)
     {
+        // print_r($params);die;
         return call_user_func_array($callback, $this->resolveCallableDependencies($callback, $params));
     }
 
@@ -213,10 +214,67 @@ class Container
             if (count($callback) < 2) {
                 throw new RuntimeException('callable定义错误');
             }
-            $reflection = new ReflectionMethod($callback[0], )
+            $reflection = new ReflectionMethod($callback[0], $callback[1]);
         } else {
             $reflection = new ReflectionFunction($callback);
         }
-        
+        // 是否为关联数组
+        $isAssociative = is_associative($params);
+        $args = [];
+
+        if ($isAssociative) {
+            // 是关联数组 - 键值对 键为string
+            foreach ($reflection->getParameters() as $param) {
+                $name = $param->getName();
+                $class = $param->getClass();
+                if ($class !== null) {
+                    $className = $class->getName();
+                    if (isset($params[$className])) {
+                        $args[] = $params[$className];
+                        unset($params[$className]);
+                    } else {
+                        $args[] = $this->get($className);
+                    }
+                } else {
+                    $args[] = $params[$name];
+                }
+            }
+        } else {
+            // 是索引数组
+            foreach ($reflection->getParameters() as $param) {
+                $name = $param->getName();
+                $class = $param->getClass();
+                if ($class !== null) {
+                    $className = $class->getName();
+                    if (isset($params[0]) && $params[0] instanceof $className) {
+                        $args[] = array_shift($params);
+                    } else {
+                        $args[] = $this->get($className);
+                    }
+                } else {
+                    $args[] = array_shift($params);
+                }
+            }
+
+        }
+        return $args;
+        // foreach ($reflection->getParameters() as $param) {
+        //     // 获取变量名
+        //     $name = $param->getName();
+        //     if ($class = $param->getClass() !== null) {
+        //         // 有类型提示的
+        //         $className = $class->getName();
+        //         if (isset($params[$className])) {
+        //             $args[] = $params[$className];
+        //             unset($params[$className]);
+        //         } elseif (! $isAssociative && isset($params[0]) && $params[0] instanceof $className) {
+        //             $args[] = array_shift($params);
+        //         } else {
+        //             $args[] = $this->get($className);
+        //         }
+        //     } elseif ($associative && isset($params[$name])) {
+
+        //     }
+        // }
     }
 }

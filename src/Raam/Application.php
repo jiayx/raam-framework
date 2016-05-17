@@ -21,6 +21,7 @@ class Application extends Container
     public function run()
     {
         $this->singleton();
+        // $this->setClassAlias();
         $loaderPath = Config::get('autoload.path');
         // print_r($loaderPath);die;
         Loader::addAutoLoadPath($loaderPath);
@@ -40,6 +41,20 @@ class Application extends Container
         $this->setSingleton('Raam\Request');
         $this->setSingleton('Route', 'Raam\Route');
         $this->setSingleton('Raam\Route');
+    }
+
+    public function setClassAlias()
+    {
+        $classes = [
+            'Application' => 'Raam\Application',
+            'Loader' => 'Raam\Loader',
+            'Request' => 'Raam\Request',
+            'Route' => 'Raam\Route',
+            'Config' => 'Raam\Config',
+        ];
+        foreach ($classes as $alias => $class) {
+            class_alias($class, $alias);
+        }
     }
 
     // 获取框架根目录
