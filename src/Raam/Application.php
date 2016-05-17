@@ -32,11 +32,14 @@ class Application extends Container
     public function singleton()
     {
         $this->setSingleton('Raam\Application', $this);
+        $this->setSingleton('Raam\Config');
         $this->setSingleton('Config', ['class' => 'Raam\Config', 'configPath' => ROOT_PATH . CONFIG_FOLDER]);
         $this->setSingleton('Loader', 'Raam\Loader');
-        $this->setSingleton('Raam\Request');
+        $this->setSingleton('Raam\Loader');
         $this->setSingleton('Request', 'Raam\Request');
+        $this->setSingleton('Raam\Request');
         $this->setSingleton('Route', 'Raam\Route');
+        $this->setSingleton('Raam\Route');
     }
 
     // 获取框架根目录

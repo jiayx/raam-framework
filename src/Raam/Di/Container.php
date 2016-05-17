@@ -1,8 +1,11 @@
 <?php
 namespace Raam\Di;
 
-use reflectionClass;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionFunction;
 use Raam\Exceptions\InvalidConfigException;
+use Raam\Exceptions\RuntimeException;
 
 // 依赖注入容器
 class Container
@@ -102,7 +105,7 @@ class Container
         }
         $dependencies = [];
         // 通过反射api实例化一个对象
-        $reflection = new reflectionClass($class);
+        $reflection = new ReflectionClass($class);
         // 获取构造函数
         $constructor = $reflection->getConstructor();
         // 不是null 说明存在构造函数
@@ -195,5 +198,25 @@ class Container
         } else {
             throw new InvalidConfigException('依赖定义格式有误');
         }
+    }
+
+    // 调用一个函数并解决依赖
+    public function invoke(callable $callback, $params)
+    {
+        return call_user_func_array($callback, $this->resolveCallableDependencies($callback, $params));
+    }
+
+    // 解决一个callable的依赖
+    public function resolveCallableDependencies($callback, $params)
+    {
+        if (is_array($callback)) {
+            if (count($callback) < 2) {
+                throw new RuntimeException('callable定义错误');
+            }
+            $reflection = new ReflectionMethod($callback[0], )
+        } else {
+            $reflection = new ReflectionFunction($callback);
+        }
+        
     }
 }
