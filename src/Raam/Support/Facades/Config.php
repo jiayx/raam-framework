@@ -5,6 +5,6 @@ class Config extends Facade
 {
     public static function getFacadeAccessor()
     {
-        return 'Config';
+        return 'config';
     }
 }

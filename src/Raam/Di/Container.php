@@ -21,6 +21,8 @@ class Container
     // 缓存依赖信息
     private $dependencies = [];
 
+    protected static $instance = null;
+
     // 注册依赖
     public function set($class, $definition = [], $params = [])
     {
@@ -41,9 +43,28 @@ class Container
         return $this;
     }
 
+    // 注册一个已经存在的共享实例
+    public function instance($class, $instance)
+    {
+        $this->singletons[$class] = $instance;
+        // print_r($this->singletons);
+    }
+
+    public static function getInstance()
+    {
+        return static::$instance;
+    }
+
+    public static function setInstance($container)
+    {
+        static::$instance = $container;
+    }
+
+
     // 获取实例
     public function get($class, $params = [], $config = [])
     {
+        print_r($this->singletons);
         // 先看是否有实例化过的单例有的话直接使用了 - note: isset(null) 返回false
         if (isset($this->singletons[$class])) {
             return $this->singletons[$class];

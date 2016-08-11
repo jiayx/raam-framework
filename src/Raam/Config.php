@@ -3,9 +3,10 @@ namespace Raam;
 /**
 * 配置文件读取
 */
+
 class Config
 {
-    private $configPath = ROOT_PATH . 'config';
+    private $configPath = ROOT_PATH . CONFIG_FOLDER;
 
     // 配置文件缓存
     private $configCache = [];
@@ -14,7 +15,9 @@ class Config
 
     public function __construct($config = [])
     {
-        $this->configPath = $config['configPath'];
+        if (isset($config['configPath'])) {
+            $this->configPath = $config['configPath'];
+        }
     }
 
     // 取配置

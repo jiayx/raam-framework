@@ -5,6 +5,6 @@ class Loader extends Facade
 {
     public static function getFacadeAccessor()
     {
-        return 'Loader';
+        return 'Raam\Loader';
     }
 }

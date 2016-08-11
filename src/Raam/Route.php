@@ -1,6 +1,7 @@
 <?php
 namespace Raam;
 
+use Raam\Application;
 use Raam\Request;
 // 路由
 class Route

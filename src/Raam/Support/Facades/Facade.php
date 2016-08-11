@@ -2,7 +2,9 @@
 namespace Raam\Support\Facades;
 
 use Raam\Exceptions\RuntimeException;
-
+/*
+ * Facade 全是单例
+ */
 class Facade
 {
     public static $app;
@@ -16,19 +18,16 @@ class Facade
     public static function getFacadeInstance()
     {
         $mixed = static::getFacadeAccessor();
-        if (is_callable($mixed)) {
-            return $mixed();
-        } elseif (is_object($mixed)) {
+
+        if (is_object($mixed)) {
             return $mixed;
-        } elseif (is_string($mixed)) {
-            // facade设置为单例
-            if (! isset(static::$facadeInstances[$mixed])) {
-                static::$facadeInstances[$mixed] = static::$app->get($mixed);
-            }
-            return static::$facadeInstances[$mixed];
-        } else {
-            throw new RuntimeException('getFacadeAccessor方法返回类型错误');
         }
+        
+        if (isset(static::$facadeInstances[$mixed])) {
+            return static::$facadeInstances[$mixed];
+        }
+
+        return static::$facadeInstances[$mixed] = static::$app->make($mixed);
     }
 
     public static function __callStatic($method, $args)
